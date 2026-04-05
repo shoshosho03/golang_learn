@@ -18,28 +18,28 @@ func main() {
 		fmt.Println("Interval must be greater than 0")
 		return
 	}
+	//引数で受け取った値でtickerを作成
+	ticker := time.NewTicker(*interval)
+	defer ticker.Stop()
 
-	v, err := mem.VirtualMemory()
-	if err != nil {
-		fmt.Println("Error getting virtual memory:", err)
-		return
+	for range ticker.C {
+		// メモリ使用率取得
+		memPercent, err := mem.VirtualMemory()
+		if err != nil {
+			fmt.Println("mem error", err)
+			continue
+		}
+		// CPU使用率取得
+		cpuPercent, err := cpu.Percent(0, false)
+		if err != nil {
+			fmt.Println("cpu error", err)
+			continue
+
+		}
+		// 出力
+		fmt.Printf("UsedPercent:%.2f%%\n", memPercent.UsedPercent)
+		fmt.Printf("CPU Percent: %.2f%%\n", cpuPercent[0])
+		fmt.Println("----")
+
 	}
-
-	c, err := cpu.Percent(time.Second, false)
-	if err != nil {
-		fmt.Println("Error getting CPU percent:", err)
-		return
-	}
-
-	for {
-
-		// システムリソースの使用状況を表示
-		fmt.Printf("UsedPercent:%.2f%%\n", v.UsedPercent)
-		fmt.Printf("CPU Percent: %.2f%%\n", c[0])
-
-		// 指定された間隔だけ待機
-		fmt.Println("Monitoring system resources for", *interval)
-		time.Sleep(*interval)
-	}
-
 }
